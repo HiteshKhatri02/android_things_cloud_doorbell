@@ -1,0 +1,46 @@
+apply plugin: 'com.android.application'
+
+apply plugin: 'kotlin-android'
+
+apply plugin: 'kotlin-android-extensions'
+
+apply plugin: 'kotlin-kapt'
+
+android {
+    compileSdkVersion 27
+    defaultConfig {
+        applicationId "com.ranosys.clouddoorbell"
+        minSdkVersion 26
+        targetSdkVersion 27
+        versionCode 1
+        versionName "1.0"
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+
+    compileOnly 'com.google.android.things:androidthings:0.6-devpreview'
+    api 'com.google.android.things.contrib:driver-apa102:0.3'
+    api 'com.google.android.things.contrib:driver-button:0.3'
+    api 'com.google.android.things.contrib:driver-bmx280:0.2'
+    api 'com.google.android.things.contrib:driver-ht16k33:0.3'
+    api 'com.google.android.things.contrib:driver-pwmspeaker:0.2'
+    //google networking libraries
+    implementation 'com.google.api-client:google-api-client-android:1.22.0' exclude module: 'httpclient'
+    implementation 'com.google.http-client:google-http-client-gson:1.22.0' exclude module: 'httpclient'
+    //cloud vision api
+    implementation 'com.google.apis:google-api-services-vision:v1-rev22-1.22.0'
+    implementation"org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    implementation 'com.google.android.things.contrib:driver-rainbowhat:0.8'
+}
+
+apply plugin: 'com.google.gms.google-services'
