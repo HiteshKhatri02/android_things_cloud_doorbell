@@ -2,6 +2,8 @@
 
 buildscript {
     ext.kotlin_version = '1.2.10'
+    ext.fuelLibVersion = '1.8.0'
+
     repositories {
         google()
         jcenter()

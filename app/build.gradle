@@ -22,7 +22,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
 }
+
+
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -39,8 +45,16 @@ dependencies {
     implementation 'com.google.http-client:google-http-client-gson:1.22.0' exclude module: 'httpclient'
     //cloud vision api
     implementation 'com.google.apis:google-api-services-vision:v1-rev22-1.22.0'
-    implementation"org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    implementation"org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
     implementation 'com.google.android.things.contrib:driver-rainbowhat:0.8'
-}
+
+
+
+    compile 'com.github.kittinunf.fuel:fuel:' + rootProject.fuelLibVersion
+    compile 'com.github.kittinunf.fuel:fuel-android:' + rootProject.fuelLibVersion
+    compile 'com.github.kittinunf.fuel:fuel-rxjava:' + rootProject.fuelLibVersion
+    compile 'com.google.code.gson:gson:2.8.1'
+    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    }
 
 apply plugin: 'com.google.gms.google-services'
