@@ -79,7 +79,9 @@ class DoorbellCamera {
                                         result: TotalCaptureResult?) {
             if (session != null) {
                 session.close();
-                cameraCaptureSession = null;
+                cameraCaptureSession?.close()
+                //cameraCaptureSession = null;
+
                 Log.d(TAG, "CaptureSession closed");
             }
         }
@@ -114,7 +116,7 @@ class DoorbellCamera {
         try {
             manager.openCamera(id,stateCallback,backgroundHandler)
         }catch (e:CameraAccessException){
-            Log.e(TAG,"Some error has been occur while accessing camera." +e.reason)
+            Log.e(TAG,"Some error has been occur while accessing camera." +e)
             e.printStackTrace()
             e.reason
         }

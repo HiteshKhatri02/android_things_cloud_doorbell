@@ -1,27 +1,29 @@
 package com.ranosys.clouddoorbell
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.media.Image
 import android.media.ImageReader
+import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import android.view.KeyEvent
 import com.google.android.things.contrib.driver.button.ButtonInputDriver
-import com.google.android.things.contrib.driver.pwmspeaker.Speaker
 import com.google.android.things.contrib.driver.rainbowhat.RainbowHat
 import java.io.IOException
 import android.os.HandlerThread
 import android.util.Base64
+import android.view.View
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
-import com.google.firebase.FirebaseApp
-import com.google.firebase.database.DatabaseReference
-import java.nio.ByteBuffer
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ServerValue
+import com.ranosys.clouddoorbell.models.DoorbellRequestModel
+import com.ranosys.clouddoorbell.models.DoorbellResponseModel
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.io.ByteArrayOutputStream
 
 
@@ -45,7 +47,7 @@ import java.io.ByteArrayOutputStream
  * @see <a href="https://github.com/androidthings/contrib-drivers#readme">https://github.com/androidthings/contrib-drivers#readme</a>
  *
  */
-class MainActivity : Activity() {
+class AndroidThingMainActivity : Activity() {
     //var buttonA : Button ?= null
 
     private var buttonADriver : ButtonInputDriver ?= null
@@ -72,7 +74,7 @@ class MainActivity : Activity() {
     private var cloudHandler : Handler?=null
 
     companion object {
-        val TAG = "MainActivity"
+        val TAG = "AndroidThingMainActivity"
     }
 
     private val onImageAvailableListener = object : ImageReader.OnImageAvailableListener {
@@ -97,14 +99,11 @@ class MainActivity : Activity() {
         }
     }
 
-    private var mDatabase: FirebaseDatabase? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.i(MainActivity.TAG, "Starting MainActivity...")
+        Log.i(AndroidThingMainActivity.TAG, "Starting AndroidThingMainActivity...")
         setContentView(R.layout.activity_main)
-
-
         //initialize buzeer
         //initBuzzer()
         //initialize button a.
@@ -112,28 +111,25 @@ class MainActivity : Activity() {
         //initialise camera handler
         initCameraHandler()
         initCamera()
-        initFireBaseInstance()
+
         initHandler()
 
     }
 
     private fun initBuzzer(){
-        Log.i(MainActivity.TAG, "Initializing Buzzer...")
+        Log.i(AndroidThingMainActivity.TAG, "Initializing Buzzer...")
         //buzzer = RainbowHat.openPiezo()
     }
 
-    private fun initFireBaseInstance(){
 
-        mDatabase = FirebaseDatabase.getInstance()
-    }
 
     private fun initButtonA(){
-        Log.i(MainActivity.TAG, "Initializing Button A...")
+        Log.i(AndroidThingMainActivity.TAG, "Initializing Button A...")
         try {
             buttonADriver = RainbowHat.createButtonAInputDriver(KeyEvent.KEYCODE_ENTER)
             buttonADriver!!.register()
         }catch (e:IOException){
-            Log.e(MainActivity.TAG,"Some error occur in initializing the apk. ")
+            Log.e(AndroidThingMainActivity.TAG,"Some error occur in initializing the apk. ")
         }
     }
 
@@ -153,20 +149,20 @@ class MainActivity : Activity() {
 
 
     override fun onDestroy() {
-        Log.i(MainActivity.TAG, "Closing Activity...")
+        Log.i(AndroidThingMainActivity.TAG, "Closing Activity...")
 
         try {
             buttonADriver!!.unregister()
             buttonADriver?.close()
         }catch (e:IOException){
-            Log.e(MainActivity.TAG,"Some error occur while closing the button A.")
+            Log.e(AndroidThingMainActivity.TAG,"Some error occur while closing the button A.")
             e.printStackTrace()
         }
 
         try {
             //buzzer?.close()
         }catch (e:IOException){
-            Log.e(MainActivity.TAG,"Some error occur while closing the buzzer.")
+            Log.e(AndroidThingMainActivity.TAG,"Some error occur while closing the buzzer.")
             e.printStackTrace()
 
         }
@@ -196,31 +192,64 @@ class MainActivity : Activity() {
     private fun onPictureTaken( imageBytes : ByteArray?){
         // ...process the captured image...
         if (null!=imageBytes){
-            val log:DatabaseReference? = mDatabase?.getReference("log")?.push()
 
-            val imgStr : String = Base64.encodeToString(imageBytes,Base64.NO_WRAP or Base64.URL_SAFE)
-            log?.child("timestamp")?.setValue(ServerValue.TIMESTAMP)
-            log?.child("image")?.setValue(imgStr)
-            //process image
+            val imgStr : String = Base64.encodeToString(imageBytes,Base64.DEFAULT).replace("\n", "")
 
-            cloudHandler?.post(Runnable {
-                try {
-                    // Process the image using Cloud Vision
-                    val annotations:MutableMap<String,Float>? = CloudVisionUtils.annotateImage(imageBytes)
-                    // Log.d(TAG, "cloud vision annotations:" + annotations);
-                    Log.d(TAG,annotations?.keys.toString())
+            runOnUiThread{AsyncTaskExample(imageBytes,imgStr).execute()}
 
-                    if (annotations != null) {
-                        log?.child("annotations")?.setValue(annotations);
-                    }
+        }
+    }
 
-                    runOnUiThread { findViewById<TextView>(R.id.textView).setText(annotations?.keys.toString()) }
-                }catch (e:IOException){
-                    Log.e(TAG, "Cloud Vison API error: ", e);
+
+
+    private fun sendEntries(doorbellRequestModel: DoorbellRequestModel){
+        val service  = RestClient.getGetClient()
+        val call = service?.sendEntry("storedata",doorbellRequestModel)
+        Log.d(TAG,call?.request().toString())
+        call?.enqueue(object : Callback<DoorbellResponseModel> {
+
+            override fun onResponse(call: Call<DoorbellResponseModel>?, response: Response<DoorbellResponseModel>?) {
+                findViewById<ProgressBar>(R.id.progressBar).visibility = View.INVISIBLE
+                if (response!!.isSuccessful){
+                    Log.d(TAG, response.body().toString())
                 }
-            })
+            }
+
+            override fun onFailure(call: Call<DoorbellResponseModel>?, t: Throwable?) {
+                findViewById<ProgressBar>(R.id.progressBar).visibility = View.INVISIBLE
+                Log.d(TAG, "Error occurred.")
+                Log.d(TAG, t.toString())
+            }
+
+        })
+    }
+
+
+    @SuppressLint("StaticFieldLeak")
+    inner class AsyncTaskExample(val imgBytes:ByteArray?, val imgStr : String): AsyncTask<Void, Void, Void>(){
+        var annotations:MutableMap<String,Float>? = null
+
+        override fun onPreExecute() {
+            super.onPreExecute()
+            findViewById<ProgressBar>(R.id.progressBar).visibility = View.VISIBLE
+        }
+        override fun doInBackground(vararg params: Void?): Void? {
+            annotations = CloudVisionUtils.annotateImage(imgBytes!!)
+            return null;
 
         }
 
+        override fun onPostExecute(result: Void?) {
+            super.onPostExecute(result)
+            if (annotations != null) {
+                Log.d(TAG,annotations?.keys.toString())
+                val timestamp = System.currentTimeMillis()
+
+                findViewById<TextView>(R.id.textView).setText(annotations?.keys.toString())
+                sendEntries(DoorbellRequestModel(imgStr,annotations.toString(),timestamp.toString()))
+            }else{
+                findViewById<ProgressBar>(R.id.progressBar).visibility = View.INVISIBLE
+            }
+        }
     }
 }

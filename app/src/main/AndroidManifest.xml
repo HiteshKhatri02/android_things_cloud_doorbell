@@ -28,19 +28,18 @@
         android:icon="@android:drawable/sym_def_app_icon">
 
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".AndroidThingMainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-        <!--    <intent-filter>
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.IOT_LAUNCHER" />
                 <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>-->
+            </intent-filter>
         </activity>
     </application>
 

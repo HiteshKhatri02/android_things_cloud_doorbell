@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "600301498300",
+    "firebase_url": "https://clouddoorbell-24054.firebaseio.com",
+    "project_id": "clouddoorbell-24054",
+    "storage_bucket": "clouddoorbell-24054.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:600301498300:android:0c4373b7b8bfd1b5",
+        "android_client_info": {
+          "package_name": "com.ranosys.clouddoorbell"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "600301498300-ac1pg4edg122jbdltu76cfmo23vb4gqp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvMo7y1khfJSs8e5Kbjt2XGBKIlvvmeLY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

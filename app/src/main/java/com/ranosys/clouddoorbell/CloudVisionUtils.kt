@@ -1,6 +1,7 @@
 package com.ranosys.clouddoorbell
 
 import android.graphics.Bitmap
+import android.os.AsyncTask
 import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.http.HttpTransport
 import com.google.api.client.json.JsonFactory
@@ -44,6 +45,7 @@ class CloudVisionUtils {
             //Batch and excute the request
             val requestBatch = BatchAnnotateImagesRequest()
             requestBatch.requests = Collections.singletonList(imageRequest)
+
             val response : BatchAnnotateImagesResponse = vision.images()
                     .annotate(requestBatch)
                     .setDisableGZipContent(true)
@@ -59,6 +61,7 @@ class CloudVisionUtils {
             reponse.responses[0].labelAnnotations?.forEach{ item -> annotation.put(item.description,item.score) }
             return annotation
         }
-
     }
+
+
 }
